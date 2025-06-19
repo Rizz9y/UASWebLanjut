@@ -7,6 +7,7 @@ const Dashboard = () => {
 
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen);
+    console.log('Sidebar toggled, isOpen:', !sidebarOpen); // Debug untuk memeriksa state
   };
 
   const barangMasuk = { ransel: 56, koper: 6, selempang: 20 };
@@ -19,9 +20,8 @@ const Dashboard = () => {
 
   return (
     <div className="kategori-container">
-      {sidebarOpen && <Sidebar toggleSidebar={toggleSidebar} />}
-
-      <div className="main-content">
+      <Sidebar toggleSidebar={toggleSidebar} isOpen={sidebarOpen} />
+      <div className={`main-content ${sidebarOpen ? 'with-sidebar' : ''}`}>
         <header>
           <button className="menu-button" onClick={toggleSidebar}>☰</button>
           <h1>DASHBOARD</h1>

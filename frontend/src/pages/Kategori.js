@@ -144,9 +144,8 @@ function Kategori() {
 
   return (
     <div className="kategori-container">
-      {sidebarOpen && <Sidebar toggleSidebar={() => setSidebarOpen(!sidebarOpen)} />}
-
-      <div className="main-content">
+      <Sidebar toggleSidebar={() => setSidebarOpen(!sidebarOpen)} isOpen={sidebarOpen} />
+      <div className={`main-content ${sidebarOpen ? 'with-sidebar' : ''}`}>
         <header>
           <button className="menu-button" onClick={() => setSidebarOpen(!sidebarOpen)}>☰</button>
           <h1>KATEGORI</h1>

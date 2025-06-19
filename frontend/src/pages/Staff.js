@@ -54,9 +54,8 @@ function Staff() {
 
   return (
     <div className="kategori-container">
-      {sidebarOpen && <Sidebar toggleSidebar={toggleSidebar} />}
-
-      <div className="main-content">
+      <Sidebar toggleSidebar={toggleSidebar} isOpen={sidebarOpen} />
+      <div className={`main-content ${sidebarOpen ? 'with-sidebar' : ''}`}>
         <header>
           <button className="menu-button" onClick={toggleSidebar}>☰</button>
           <h1>MANAJEMEN STAFF</h1>
@@ -117,4 +116,4 @@ function Staff() {
   );
 }
 
- export default Staff;
+export default Staff;

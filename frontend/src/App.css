@@ -3,23 +3,26 @@
   --primary-color: #915e3c;
   --hover-color: #70452d;
   --text-dark: #3a2618;
+  --sidebar-width: 250px;
 }
 
 body {
   margin: 0;
   background-color: var(--bg-color);
   font-family: 'Segoe UI', sans-serif;
+  min-height: 100vh;
 }
 
 .kategori-container {
   display: flex;
-  background-color: var(--bg-color);
+  width: 100%;
   min-height: 100vh;
   font-family: 'Segoe UI', sans-serif;
+  transition: all 0.3s ease;
 }
 
 .sidebar {
-  width: 250px;
+  width: var(--sidebar-width);
   background-color: var(--primary-color);
   color: white;
   padding: 20px;
@@ -29,6 +32,11 @@ body {
   border-radius: 0 30px 30px 0;
   display: flex;
   flex-direction: column;
+  transform: translateX(-100%); /* Sembunyikan sidebar secara default */
+}
+
+.sidebar.open {
+  transform: translateX(0); /* Tampilkan sidebar saat class 'open' ditambahkan */
 }
 
 .sidebar h2 {
@@ -76,7 +84,12 @@ body {
   flex-grow: 1;
   width: 100%;
   padding: 30px 40px;
-  margin-left: 250px;
+  transition: all 0.3s ease;
+  margin-left: 0; /* Default tanpa margin saat sidebar tersembunyi */
+}
+
+.main-content.with-sidebar {
+  margin-left: var(--sidebar-width); /* Geser saat sidebar muncul */
 }
 
 header {
@@ -86,6 +99,7 @@ header {
   border-bottom: 2px solid var(--primary-color);
   padding-bottom: 10px;
   margin-bottom: 40px;
+  width: 100%;
 }
 
 .menu-button {
@@ -143,7 +157,7 @@ h1 {
   justify-content: center;
   border-radius: 16px;
   cursor: pointer;
-  background-color: #f5f1e6;
+  background-color: #fff;
   transition: all 0.2s ease;
 }
 
@@ -378,6 +392,7 @@ h1 {
   flex-wrap: wrap;
   justify-content: center;
   gap: 40px;
+  width: 100%;
 }
 
 .staff-card {
@@ -434,6 +449,7 @@ h1 {
 .tambah-btn-container {
   text-align: center;
   margin-top: 30px;
+  width: 100%;
 }
 
 .tambah-btn {
@@ -593,6 +609,7 @@ h1 {
   flex-wrap: wrap;
   gap: 20px;
   align-items: center;
+  justify-content: center;
 }
 
 .item-box {
@@ -636,7 +653,7 @@ h1 {
   }
 
   .main-content {
-    margin-left: 200px;
+    margin-left: 0;
     padding: 20px;
   }
 

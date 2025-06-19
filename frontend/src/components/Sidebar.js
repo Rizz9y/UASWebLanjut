@@ -2,13 +2,13 @@ import React, { useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import '../App.css';
 
-const Sidebar = ({ toggleSidebar }) => {
+const Sidebar = ({ toggleSidebar, isOpen }) => {
   const sidebarRef = useRef(null);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (sidebarRef.current && !sidebarRef.current.contains(event.target)) {
-        toggleSidebar();
+      if (isOpen && sidebarRef.current && !sidebarRef.current.contains(event.target)) {
+        toggleSidebar(); // Tutup sidebar hanya jika terbuka dan klik di luar
       }
     };
 
@@ -17,10 +17,10 @@ const Sidebar = ({ toggleSidebar }) => {
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [toggleSidebar]);
+  }, [toggleSidebar, isOpen]); // Tambahkan isOpen sebagai dependency
 
   return (
-    <div ref={sidebarRef} className="sidebar">
+    <div ref={sidebarRef} className={`sidebar ${isOpen ? 'open' : ''}`}>
       <h2>Menu</h2>
       <div className="sidebar-links">
         <Link to="/dashboard">Dashboard</Link>
