@@ -1,23 +1,21 @@
 const app = require("./app");
 const env = require("./config/env");
-const { connectMySQL, connectMongoDB } = require("./config/database"); // tambahkan connectMongoDB
+const { connectMySQL } = require("./config/database"); // HAPUS connectMongoDB
 const { syncDatabase } = require("./models");
 const { createInitialAdmin } = require("./utils/initialAdminSetup");
 
 const adminRoutes = require('./routes/admin');
 app.use('/api/admin', adminRoutes);
 
-
 const PORT = env.PORT;
 
 async function startServer() {
   await connectMySQL(); // Koneksikan ke MySQL
 
-  await connectMongoDB(); // Koneksikan ke MongoDB
+  // HAPUS: await connectMongoDB();
 
-  await syncDatabase(); // Sinkronkan model MySQL (membuat tabel jika belum ada)
-
-  await createInitialAdmin(); // Buat akun Admin awal jika belum ada
+  await syncDatabase();
+  await createInitialAdmin();
 
   app.listen(PORT, () => {
     console.log(`Server berjalan di port ${PORT} (${env.NODE_ENV} mode)`);

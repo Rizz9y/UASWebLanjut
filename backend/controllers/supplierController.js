@@ -16,6 +16,7 @@ exports.createSupplier = async (req, res) => {
     res.status(201).json({ message: "Supplier berhasil dibuat.", supplier });
   } catch (error) {
     console.error("Error creating supplier:", error);
+    // saveLog("Error creating supplier: " + error.message); // Menyimpan log kesalahan
     if (error.name === "SequelizeUniqueConstraintError") {
       return res
         .status(409)
@@ -36,6 +37,7 @@ exports.getAllSuppliers = async (req, res) => {
     res.status(200).json(suppliers);
   } catch (error) {
     console.error("Error fetching suppliers:", error);
+    // saveLog("Error fetching suppliers: " + error.message); // Menyimpan log kesalahan
     res.status(500).json({
       message: "Terjadi kesalahan server saat mengambil supplier.",
       error: error.message,
@@ -53,6 +55,7 @@ exports.getSupplierById = async (req, res) => {
     res.status(200).json(supplier);
   } catch (error) {
     console.error("Error fetching supplier by ID:", error);
+    // saveLog("Error fetching supplier by ID: " + error.message); // Menyimpan log kesalahan
     res.status(500).json({
       message: "Terjadi kesalahan server saat mengambil supplier.",
       error: error.message,
@@ -85,6 +88,7 @@ exports.updateSupplier = async (req, res) => {
       .json({ message: "Supplier berhasil diperbarui.", supplier });
   } catch (error) {
     console.error("Error updating supplier:", error);
+    // saveLog("Error updating supplier: " + error.message); // Menyimpan log kesalahan
     if (error.name === "SequelizeUniqueConstraintError") {
       return res
         .status(409)
@@ -114,6 +118,7 @@ exports.deleteSupplier = async (req, res) => {
     res.status(200).json({ message: "Supplier berhasil dihapus." });
   } catch (error) {
     console.error("Error deleting supplier:", error);
+    // saveLog("Error deleting supplier: " + error.message); // Menyimpan log kesalahan
     res.status(500).json({
       message: "Terjadi kesalahan server saat menghapus supplier.",
       error: error.message,
