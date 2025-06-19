@@ -1,22 +1,38 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Sidebar from '../components/Sidebar';
 import '../App.css';
 
 const Dashboard = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [barangMasuk, setBarangMasuk] = useState({});
+  const [barangKeluar, setBarangKeluar] = useState({});
+  const [totalMasuk, setTotalMasuk] = useState(0);
+  const [totalKeluar, setTotalKeluar] = useState(0);
 
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen);
-    console.log('Sidebar toggled, isOpen:', !sidebarOpen); // Debug untuk memeriksa state
+    console.log('Sidebar toggled, isOpen:', !sidebarOpen);
   };
 
-  const barangMasuk = { ransel: 56, koper: 6, selempang: 20 };
-  const barangKeluar = { ransel: 20, koper: 5, selempang: 45 };
+  useEffect(() => {
+    fetch('http://localhost:3001/api/stock/in')
+      .then((res) => res.json())
+      .then((data) => {
+        setBarangMasuk(data);
+        const total = Object.values(data).reduce((sum, val) => sum + val, 0);
+        setTotalMasuk(total);
+      })
+      .catch((err) => console.error('Gagal ambil data barang masuk:', err));
 
-  const totalMasuk =
-    barangMasuk.ransel + barangMasuk.koper + barangMasuk.selempang;
-  const totalKeluar =
-    barangKeluar.ransel + barangKeluar.koper + barangKeluar.selempang;
+    fetch('http://localhost:3001/api/stock/out')
+      .then((res) => res.json())
+      .then((data) => {
+        setBarangKeluar(data);
+        const total = Object.values(data).reduce((sum, val) => sum + val, 0);
+        setTotalKeluar(total);
+      })
+      .catch((err) => console.error('Gagal ambil data barang keluar:', err));
+  }, []);
 
   return (
     <div className="kategori-container">

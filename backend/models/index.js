@@ -8,11 +8,12 @@ const Variant = require("./Variant");
 const Supplier = require("./Supplier");
 const StockTransaction = require("./StockTransaction");
 
+
 // Define Associations (Relasi antar model MySQL)
 
 // Product - Category
 Category.hasMany(Product, { foreignKey: "categoryId", as: "products" });
-Product.belongsTo(Category, { foreignKey: "categoryId", as: "category" });
+Product.belongsTo(Category, { foreignKey: "categoryId", as: "productCategory" });
 
 // Product - Variant
 Product.hasMany(Variant, { foreignKey: "productId", as: "variants" });
@@ -25,14 +26,14 @@ Variant.hasMany(StockTransaction, {
 });
 StockTransaction.belongsTo(Variant, { foreignKey: "variantId", as: "variant" });
 
-// StockTransaction - User (Who performed the transaction)
+// StockTransaction - User
 User.hasMany(StockTransaction, {
   foreignKey: "userId",
   as: "stockTransactions",
 });
 StockTransaction.belongsTo(User, { foreignKey: "userId", as: "transactionBy" });
 
-// StockTransaction - Supplier (For IN type transactions)
+// StockTransaction - Supplier
 Supplier.hasMany(StockTransaction, {
   foreignKey: "supplierId",
   as: "stockTransactions",
@@ -47,7 +48,7 @@ const syncDatabase = async () => {
     await sequelize.authenticate();
     console.log("Koneksi MySQL (Sequelize) berhasil.");
 
-    await sequelize.sync({ force: false }); // force: true AKAN MENGHAPUS TABEL! Gunakan hati-hati.
+    await sequelize.sync({ force: false });
     console.log("Semua model MySQL disinkronkan.");
   } catch (error) {
     console.error("Gagal koneksi atau sinkronisasi database MySQL:", error);
@@ -63,5 +64,6 @@ module.exports = {
   Variant,
   Supplier,
   StockTransaction,
+  
   syncDatabase,
 };

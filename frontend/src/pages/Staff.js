@@ -1,55 +1,76 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
 import Sidebar from '../components/Sidebar';
 import '../App.css';
 
 function Staff() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [staffList, setStaffList] = useState([
-    { id: 1, name: 'MUHAMMAD RIZQY', username: 'rizqy', password: '1234' },
-    { id: 2, name: 'MUHAMMAD RIZQY', username: 'rizqy2', password: '1234' },
-    { id: 3, name: 'MUHAMMAD RIZQY', username: 'rizqy3', password: '1234' },
-    { id: 4, name: 'MUHAMMAD RIZQY', username: 'rizqy4', password: '1234' }
-  ]);
-
+  const [staffList, setStaffList] = useState([]);
   const [editingStaff, setEditingStaff] = useState(null);
+
+  useEffect(() => {
+    fetch("http://localhost:3001/api/staff")
+      .then(res => res.json())
+      .then(data => setStaffList(data))
+      .catch(err => console.error("Gagal ambil data staff:", err));
+  }, []);
 
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
 
-  const handleAddStaff = () => {
+  const handleAddStaff = async () => {
     const newStaff = {
-      id: Date.now(),
-      name: 'MUHAMMAD RIZQY',
+      name: 'Karyawan',
       username: '',
-      password: ''
+      password: '',
+      role: 'staff_gudang'
     };
-    setStaffList([...staffList, newStaff]);
+
+    try {
+      const res = await fetch("http://localhost:3001/api/staff", {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newStaff)
+      });
+      const created = await res.json();
+      setStaffList(prev => [...prev, created]);
+    } catch (err) {
+      console.error("Gagal tambah staff:", err);
+    }
   };
 
-  const handleDelete = (id) => {
-    const updatedList = staffList.filter((staff) => staff.id !== id);
-    setStaffList(updatedList);
+  const handleDelete = async (id) => {
+    try {
+      await fetch(`http://localhost:3001/api/staff/${id}`, { method: 'DELETE' });
+      setStaffList(staffList.filter((staff) => staff.id !== id));
+    } catch (err) {
+      console.error("Gagal hapus staff:", err);
+    }
   };
 
-  const handleEdit = (staff) => {
-    setEditingStaff({ ...staff });
-  };
+  const handleEdit = (staff) => setEditingStaff({ ...staff });
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setEditingStaff({ ...editingStaff, [name]: value });
   };
 
-  const handleCancelEdit = () => {
-    setEditingStaff(null);
-  };
+  const handleCancelEdit = () => setEditingStaff(null);
 
-  const handleSaveEdit = () => {
-    const updatedList = staffList.map((staff) =>
-      staff.id === editingStaff.id ? editingStaff : staff
-    );
-    setStaffList(updatedList);
-    setEditingStaff(null);
+  const handleSaveEdit = async () => {
+    try {
+      await fetch(`http://localhost:3001/api/staff/${editingStaff.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(editingStaff)
+      });
+
+      const updatedList = staffList.map((staff) =>
+        staff.id === editingStaff.id ? editingStaff : staff
+      );
+      setStaffList(updatedList);
+      setEditingStaff(null);
+    } catch (err) {
+      console.error("Gagal update staff:", err);
+    }
   };
 
   return (
@@ -79,7 +100,6 @@ function Staff() {
         </div>
       </div>
 
-      {/* Modal untuk edit staff */}
       {editingStaff && (
         <div className="edit-modal">
           <div className="edit-box">
@@ -100,7 +120,7 @@ function Staff() {
             />
             <label>EDIT PASSWORD</label>
             <input
-              type="text" // Diubah dari type="password" menjadi type="text"
+              type="text"
               name="password"
               value={editingStaff.password}
               onChange={handleInputChange}

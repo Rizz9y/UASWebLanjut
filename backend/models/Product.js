@@ -14,6 +14,10 @@ const Product = sequelize.define(
       type: DataTypes.STRING,
       allowNull: false,
     },
+    category: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
     sku_master: {
       type: DataTypes.STRING,
       unique: true,
@@ -44,5 +48,6 @@ const Product = sequelize.define(
     timestamps: true,
   }
 );
+
 
 module.exports = Product;

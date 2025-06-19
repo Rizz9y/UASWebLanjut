@@ -1,4 +1,3 @@
-// src/pages/LoginAdmin.js
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -9,15 +8,31 @@ const LoginAdmin = () => {
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
-  const handleLogin = () => {
-    console.log("Coba login dengan", username, password);
-    if (username === 'admin' && password === '1234') {
-      console.log("Login berhasil");
-      localStorage.setItem('isLoggedIn', 'true');
-      navigate('/dashboard');
-    } else {
-      console.log("Login gagal");
-      setError('Username atau password salah');
+  const handleLogin = async () => {
+    setError('');
+
+    try {
+      const response = await fetch('http://localhost:3001/api/admin/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        // Simpan status login dan token
+        localStorage.setItem('isLoggedIn', 'true');
+        localStorage.setItem('adminToken', data.token);
+        localStorage.setItem('adminName', data.user.name);
+
+        navigate('/dashboard');
+      } else {
+        setError(data.message || 'Username atau password salah');
+      }
+    } catch (err) {
+      console.error('Login error:', err);
+      setError('Terjadi kesalahan koneksi ke server.');
     }
   };
 

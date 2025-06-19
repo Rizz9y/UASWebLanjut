@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+// Refactored React component to fetch category and product data from backend API
+import React, { useState, useEffect } from 'react';
 import Sidebar from '../components/Sidebar';
 import '../App.css';
 
@@ -9,51 +10,48 @@ function Kategori() {
   const [editableProducts, setEditableProducts] = useState([]);
   const [totalStock, setTotalStock] = useState(0);
   const [isEditing, setIsEditing] = useState(false);
-  const [categories, setCategories] = useState([
-    { id: 1, name: 'Ransel' },
-    { id: 2, name: 'Koper' },
-    { id: 3, name: 'Selendang' },
-  ]);
+  const [categories, setCategories] = useState([]);
   const [showAddCategory, setShowAddCategory] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState('');
   const [showAddProduct, setShowAddProduct] = useState(false);
   const [newProductName, setNewProductName] = useState('');
 
-  const dummyProductsByCategory = {
-    Ransel: [
-      { id: 101, name: 'Tas Pinggang Pria dan Wanita', editable: true },
-      { id: 102, name: 'Tas Selempang dan Bahu Pria dan Wanita', editable: true },
-      { id: 103, name: 'Ransel Pria dan Wanita', editable: true },
-      { id: 104, name: 'Tas Pria dan Wanita Lainnya', editable: true },
-      { id: 105, name: 'Tote Bag', editable: true },
-      { id: 106, name: 'Tas Laptop', editable: true },
-      { id: 107, name: 'Tas Anak Pria dan Wanita', editable: true },
-      { id: 108, name: 'Tas Ransel Unisex', editable: true },
-    ],
-    Koper: [
-      { id: 201, name: 'Koper Sedang', editable: true },
-      { id: 202, name: 'Koper Besar', editable: true },
-    ],
-    Selendang: [
-      { id: 301, name: 'Selendang Batik', editable: true },
-      { id: 302, name: 'Selendang Tenun', editable: true },
-    ],
-  };
-
-  const dummyStock = {
-    Ransel: 80,
-    Koper: 30,
-    Selendang: 60,
-  };
+  useEffect(() => {
+    fetch('http://localhost:3001/api/categories')
+      .then(res => res.json())
+      .then(data => setCategories(data))
+      .catch(err => console.error('Gagal ambil kategori:', err));
+  }, []);
 
   const openModal = (category) => {
-    setSelectedCategory(category);
-    const categoryProducts = dummyProductsByCategory[category.name] || [];
-    setProducts(categoryProducts);
-    setEditableProducts(categoryProducts.map(p => ({ ...p })));
-    setTotalStock(dummyStock[category.name] || 0);
-    setIsEditing(false);
-  };
+  setSelectedCategory(category);
+
+  const token = localStorage.getItem("adminToken");
+
+  fetch(`http://localhost:3001/api/products?category=${category.name}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  })
+    .then(res => {
+      if (!res.ok) {
+        throw new Error(`Gagal fetch produk. Status: ${res.status}`);
+      }
+      return res.json();
+    })
+    .then(data => {
+      if (!Array.isArray(data)) {
+        throw new Error("Data produk bukan array");
+      }
+      setProducts(data);
+      setEditableProducts(data.map(p => ({ ...p })));
+      setTotalStock(data.length);
+    })
+    .catch(err => console.error('Gagal ambil produk:', err));
+
+  setIsEditing(false);
+};
+
 
   const closeModal = () => {
     setSelectedCategory(null);
@@ -63,16 +61,20 @@ function Kategori() {
     setShowAddProduct(false);
   };
 
-  const handleEdit = () => {
-    setIsEditing(true);
-  };
+  const handleEdit = () => setIsEditing(true);
 
   const handleSave = () => {
-    setProducts(editableProducts);
-    if (selectedCategory) {
-      dummyProductsByCategory[selectedCategory.name] = editableProducts;
-    }
-    setIsEditing(false);
+    fetch(`http://localhost:3001/api/products/update`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ category: selectedCategory.name, products: editableProducts })
+    })
+      .then(res => res.json())
+      .then(() => {
+        setProducts(editableProducts);
+        setIsEditing(false);
+      })
+      .catch(err => console.error('Gagal simpan perubahan:', err));
   };
 
   const handleCancel = () => {
@@ -80,13 +82,14 @@ function Kategori() {
     setIsEditing(false);
   };
 
+const handleCancelAddProduct = () => {
+  setNewProductName('');
+  setShowAddProduct(false);
+};
+
   const handleProductChange = (productId, newName) => {
-    setEditableProducts(prev => 
-      prev.map(product => 
-        product.id === productId 
-          ? { ...product, name: newName }
-          : product
-      )
+    setEditableProducts(prev =>
+      prev.map(product => product.id === productId ? { ...product, name: newName } : product)
     );
   };
 
@@ -95,25 +98,32 @@ function Kategori() {
   };
 
   const handleDeleteCategory = () => {
-    if (selectedCategory && window.confirm(`Apakah Anda yakin ingin menghapus kategori "${selectedCategory.name}"?`)) {
-      setCategories(prev => prev.filter(cat => cat.id !== selectedCategory.id));
-      delete dummyProductsByCategory[selectedCategory.name];
-      delete dummyStock[selectedCategory.name];
-      closeModal();
+    if (selectedCategory && window.confirm(`Yakin hapus kategori "${selectedCategory.name}"?`)) {
+      fetch(`http://localhost:3001/api/categories/${selectedCategory.id}`, {
+        method: 'DELETE'
+      })
+        .then(() => {
+          setCategories(prev => prev.filter(cat => cat.id !== selectedCategory.id));
+          closeModal();
+        })
+        .catch(err => console.error('Gagal hapus kategori:', err));
     }
   };
 
   const handleAddCategory = () => {
     if (newCategoryName.trim()) {
-      const newCategory = {
-        id: Math.max(...categories.map(c => c.id)) + 1,
-        name: newCategoryName.trim()
-      };
-      setCategories(prev => [...prev, newCategory]);
-      setNewCategoryName('');
-      setShowAddCategory(false);
-      dummyProductsByCategory[newCategory.name] = [];
-      dummyStock[newCategory.name] = 0;
+      fetch('http://localhost:3001/api/categories', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: newCategoryName.trim() })
+      })
+        .then(res => res.json())
+        .then((newCat) => {
+          setCategories(prev => [...prev, newCat]);
+          setNewCategoryName('');
+          setShowAddCategory(false);
+        })
+        .catch(err => console.error('Gagal tambah kategori:', err));
     }
   };
 
@@ -125,21 +135,23 @@ function Kategori() {
   const handleAddProduct = () => {
     if (newProductName.trim() && selectedCategory) {
       const newProduct = {
-        id: Math.max(...editableProducts.map(p => p.id), 0) + 1,
         name: newProductName.trim(),
-        editable: true
+        category: selectedCategory.name
       };
-      setEditableProducts(prev => [...prev, newProduct]);
-      setNewProductName('');
-      setShowAddProduct(false);
-      dummyProductsByCategory[selectedCategory.name] = [...editableProducts, newProduct];
-      setTotalStock(prev => prev + 1); // Update total stock (simplified increment)
+      fetch(`http://localhost:3001/api/products`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newProduct)
+      })
+        .then(res => res.json())
+        .then((createdProduct) => {
+          setEditableProducts(prev => [...prev, createdProduct]);
+          setNewProductName('');
+          setShowAddProduct(false);
+          setTotalStock(prev => prev + 1);
+        })
+        .catch(err => console.error('Gagal tambah produk:', err));
     }
-  };
-
-  const handleCancelAddProduct = () => {
-    setNewProductName('');
-    setShowAddProduct(false);
   };
 
   return (

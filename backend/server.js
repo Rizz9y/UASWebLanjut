@@ -4,6 +4,10 @@ const { connectMySQL, connectMongoDB } = require("./config/database"); // tambah
 const { syncDatabase } = require("./models");
 const { createInitialAdmin } = require("./utils/initialAdminSetup");
 
+const adminRoutes = require('./routes/admin');
+app.use('/api/admin', adminRoutes);
+
+
 const PORT = env.PORT;
 
 async function startServer() {
