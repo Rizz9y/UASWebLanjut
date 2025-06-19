@@ -7,12 +7,15 @@ function ManajemenBarang() {
   const [categories, setCategories] = useState([]);
   const [form, setForm] = useState({
     name: '',
+    sku_master: '',
     base_price_buy: '',
     base_price_sell: '',
     unit: '',
-    categoryid: '', // ← UBAH DARI categoryId KE categoryid
+    stock: 0,
+    categoryid: '',
   });
   const [editingId, setEditingId] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   const fetchBarang = async () => {
     try {
@@ -23,6 +26,7 @@ function ManajemenBarang() {
       setBarangList(res.data);
     } catch (err) {
       console.error('Gagal ambil data barang:', err);
+      alert('Gagal mengambil data barang!');
     }
   };
 
@@ -35,6 +39,7 @@ function ManajemenBarang() {
       setCategories(res.data);
     } catch (err) {
       console.error('Gagal ambil kategori:', err);
+      alert('Gagal mengambil data kategori!');
     }
   };
 
@@ -48,7 +53,6 @@ function ManajemenBarang() {
   };
 
   const handleSubmit = async () => {
-    // VALIDASI FORM SEBELUM KIRIM
     if (!form.name.trim()) {
       alert('Nama barang harus diisi!');
       return;
@@ -61,6 +65,10 @@ function ManajemenBarang() {
       alert('Harga jual harus diisi dan lebih dari 0!');
       return;
     }
+    if (!form.stock || form.stock < 0) {
+      alert('Stok harus diisi dan tidak boleh negatif!');
+      return;
+    }
     if (!form.unit.trim()) {
       alert('Satuan harus diisi!');
       return;
@@ -70,19 +78,27 @@ function ManajemenBarang() {
       return;
     }
 
+    setLoading(true);
+
     try {
       const token = localStorage.getItem('token');
-      
-      // KONVERSI HARGA KE NUMBER
       const dataToSend = {
         ...form,
+        name: form.name.trim(),
+        sku_master: form.sku_master.trim() || undefined,
+        unit: form.unit.trim(),
         base_price_buy: parseFloat(form.base_price_buy),
         base_price_sell: parseFloat(form.base_price_sell),
+        stock: parseInt(form.stock),
+        categoryid: parseInt(form.categoryid),
       };
-      
-      // DEBUG: CEK DATA YANG AKAN DIKIRIM
+
+      if (!dataToSend.sku_master) {
+        delete dataToSend.sku_master;
+      }
+
       console.log('Data yang akan dikirim:', dataToSend);
-      
+
       if (editingId) {
         await api.put(`/products/${editingId}`, dataToSend, {
           headers: { Authorization: `Bearer ${token}` },
@@ -94,30 +110,67 @@ function ManajemenBarang() {
         });
         alert('Data berhasil ditambahkan!');
       }
-      
-      setForm({ name: '', base_price_buy: '', base_price_sell: '', unit: '', categoryid: '' });
+
+      setForm({ 
+        name: '', 
+        sku_master: '',
+        base_price_buy: '', 
+        base_price_sell: '', 
+        unit: '', 
+        stock: 0, 
+        categoryid: '' 
+      });
       setEditingId(null);
       fetchBarang();
     } catch (err) {
       console.error('Gagal menyimpan:', err);
-      
-      // DEBUG: TAMPILKAN DETAIL ERROR
-      console.log('Error response:', err.response?.data);
-      console.log('Error status:', err.response?.status);
-      
-      alert(err?.response?.data?.message || 'Terjadi kesalahan saat menyimpan.');
+      if (err.response?.status === 409) {
+        if (err.response.data.message.includes('SKU')) {
+          alert('SKU sudah ada! Silakan gunakan SKU yang berbeda atau biarkan kosong untuk generate otomatis.');
+        } else {
+          alert('Data sudah ada (duplikat)!');
+        }
+      } else if (err.response?.status === 400) {
+        if (err.response.data.errors) {
+          const errorMessages = err.response.data.errors.map(error => `${error.field}: ${error.message}`).join('\n');
+          alert(`Validation Error:\n${errorMessages}`);
+        } else {
+          alert(err.response.data.message || 'Data tidak valid!');
+        }
+      } else if (err.response?.status === 404) {
+        alert(err.response.data.message || 'Data tidak ditemukan!');
+      } else {
+        alert(err?.response?.data?.message || 'Terjadi kesalahan saat menyimpan.');
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleEdit = (item) => {
     setForm({
       name: item.name,
+      sku_master: item.sku_master || '',
       base_price_buy: item.base_price_buy || '',
       base_price_sell: item.base_price_sell || '',
       unit: item.unit,
-      categoryid: item.categoryid, // ← UBAH DARI categoryId KE categoryid
+      stock: item.stock || 0,
+      categoryid: item.categoryid,
     });
     setEditingId(item.id);
+  };
+
+  const handleCancel = () => {
+    setForm({ 
+      name: '', 
+      sku_master: '',
+      base_price_buy: '', 
+      base_price_sell: '', 
+      unit: '', 
+      stock: 0, 
+      categoryid: '' 
+    });
+    setEditingId(null);
   };
 
   const handleDelete = async (id) => {
@@ -131,9 +184,17 @@ function ManajemenBarang() {
         alert('Data berhasil dihapus!');
       } catch (err) {
         console.error('Gagal menghapus:', err);
-        alert('Gagal menghapus data!');
+        alert(err?.response?.data?.message || 'Gagal menghapus data!');
       }
     }
+  };
+
+  const formatCurrency = (amount) => {
+    return new Intl.NumberFormat('id-ID', {
+      style: 'currency',
+      currency: 'IDR',
+      minimumFractionDigits: 0,
+    }).format(amount);
   };
 
   return (
@@ -142,89 +203,132 @@ function ManajemenBarang() {
       <div className="barang-form">
         <input 
           name="name" 
-          placeholder="Nama Barang" 
+          placeholder="Nama Barang *" 
           value={form.name} 
           onChange={handleInput} 
           required
+          disabled={loading}
+        />
+        <input 
+          name="sku_master" 
+          placeholder="SKU (opsional - akan generate otomatis jika kosong)" 
+          value={form.sku_master} 
+          onChange={handleInput}
+          disabled={loading}
         />
         <input 
           name="base_price_buy" 
-          placeholder="Harga Beli" 
+          placeholder="Harga Beli *" 
           type="number"
+          step="0.01"
           value={form.base_price_buy} 
           onChange={handleInput} 
           required
+          disabled={loading}
         />
         <input 
           name="base_price_sell" 
-          placeholder="Harga Jual" 
+          placeholder="Harga Jual *" 
           type="number"
+          step="0.01"
           value={form.base_price_sell} 
           onChange={handleInput} 
           required
+          disabled={loading}
+        />
+        <input 
+          name="stock" 
+          placeholder="Stok Barang *" 
+          type="number"
+          min="0"
+          value={form.stock} 
+          onChange={handleInput} 
+          required
+          disabled={loading}
         />
         <input 
           name="unit" 
-          placeholder="Satuan (contoh: kg, pcs, liter)" 
+          placeholder="Satuan (contoh: kg, pcs, liter) *" 
           value={form.unit} 
           onChange={handleInput} 
           required
+          disabled={loading}
         />
         <select 
           name="categoryid" 
           value={form.categoryid} 
           onChange={handleInput}
           required
+          disabled={loading}
         >
-          <option value="">Pilih Kategori</option>
+          <option value="">Pilih Kategori *</option>
           {categories.map((cat) => (
             <option key={cat.id} value={cat.id}>{cat.name}</option>
           ))}
         </select>
-        <button onClick={handleSubmit}>
-          {editingId ? 'Update' : 'Tambah'}
+        <button onClick={handleSubmit} disabled={loading}>
+          {loading ? 'Menyimpan...' : (editingId ? 'Update' : 'Tambah')}
         </button>
         {editingId && (
-          <button 
-            onClick={() => {
-              setForm({ name: '', base_price_buy: '', base_price_sell: '', unit: '', categoryid: '' });
-              setEditingId(null);
-            }}
-          >
+          <button onClick={handleCancel} disabled={loading}>
             Batal
           </button>
         )}
       </div>
 
-      <table className="barang-table">
-        <thead>
-          <tr>
-            <th>Nama</th>
-            <th>SKU</th>
-            <th>Harga Beli</th>
-            <th>Harga Jual</th>
-            <th>Satuan</th>
-            <th>Kategori</th>
-            <th>Aksi</th>
-          </tr>
-        </thead>
-        <tbody>
-          {barangList.map((item) => (
-            <tr key={item.id}>
-              <td>{item.name}</td>
-              <td>{item.sku_master}</td>
-              <td>Rp {item.base_price_buy}</td>
-              <td>Rp {item.base_price_sell}</td>
-              <td>{item.unit}</td>
-              <td>{item.category?.name || '-'}</td>
-              <td>
-                <button onClick={() => handleEdit(item)}>Edit</button>
-                <button onClick={() => handleDelete(item.id)}>Hapus</button>
-              </td>
+      <div className="table-container">
+        <table className="barang-table">
+          <thead>
+            <tr>
+              <th>Nama</th>
+              <th>SKU</th>
+              <th>Harga Beli</th>
+              <th>Harga Jual</th>
+              <th>Stok</th>
+              <th>Satuan</th>
+              <th>Kategori</th>
+              <th>Aksi</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {barangList.length === 0 ? (
+              <tr>
+                <td colSpan="8" style={{textAlign: 'center', padding: '20px'}}>
+                  Tidak ada data barang
+                </td>
+              </tr>
+            ) : (
+              barangList.map((item) => (
+                <tr key={item.id}>
+                  <td>{item.name}</td>
+                  <td>{item.sku_master}</td>
+                  <td>{formatCurrency(item.base_price_buy)}</td>
+                  <td>{formatCurrency(item.base_price_sell)}</td>
+                  <td>{item.stock}</td>
+                  <td>{item.unit}</td>
+                  <td>{item.category?.name || '-'}</td>
+                  <td>
+                    <button 
+                      onClick={() => handleEdit(item)}
+                      disabled={loading}
+                      style={{marginRight: '5px'}}
+                    >
+                      Edit
+                    </button>
+                    <button 
+                      onClick={() => handleDelete(item.id)}
+                      disabled={loading}
+                      style={{backgroundColor: '#dc3545', borderColor: '#dc3545'}}
+                    >
+                      Hapus
+                    </button>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

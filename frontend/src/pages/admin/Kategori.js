@@ -68,59 +68,59 @@ function Kategori() {
   };
 
   return (
-  <div className="kategori-container">
-    <h2 className="kategori-title">Manajemen Kategori</h2>
+    <div className="kategori-container">
+      <h2 className="kategori-title">Manajemen Kategori</h2>
 
-    <div className="kategori-form">
-      <input
-        type="text"
-        placeholder="Nama kategori baru"
-        value={newName}
-        onChange={(e) => setNewName(e.target.value)}
-      />
-      <button onClick={handleAdd}>Tambah</button>
-    </div>
+      <div className="kategori-form">
+        <input
+          type="text"
+          placeholder="Nama kategori baru"
+          value={newName}
+          onChange={(e) => setNewName(e.target.value)}
+        />
+        <button onClick={handleAdd}>Tambah</button>
+      </div>
 
-    <table className="kategori-table">
-      <thead>
-        <tr>
-          <th>Nama</th>
-          <th>Aksi</th>
-        </tr>
-      </thead>
-      <tbody>
-        {categories.map(cat => (
-          <tr key={cat.id}>
-            <td>
-              {editingId === cat.id ? (
-                <input
-                  type="text"
-                  value={editingName}
-                  onChange={(e) => setEditingName(e.target.value)}
-                />
-              ) : (
-                cat.name
-              )}
-            </td>
-            <td>
-              {editingId === cat.id ? (
-                <>
-                  <button onClick={() => handleSave(cat.id)}>Simpan</button>
-                  <button onClick={handleCancel}>Batal</button>
-                </>
-              ) : (
-                <>
-                  <button onClick={() => handleEdit(cat.id, cat.name)}>Edit</button>
-                  <button onClick={() => handleDelete(cat.id)}>Hapus</button>
-                </>
-              )}
-            </td>
+      <table className="kategori-table">
+        <thead>
+          <tr>
+            <th>Nama</th>
+            <th>Aksi</th>
           </tr>
-        ))}
-      </tbody>
-    </table>
-  </div>
-);
+        </thead>
+        <tbody>
+          {categories.map(cat => (
+            <tr key={cat.id}>
+              <td>
+                {editingId === cat.id ? (
+                  <input
+                    type="text"
+                    value={editingName}
+                    onChange={(e) => setEditingName(e.target.value)}
+                  />
+                ) : (
+                  cat.name
+                )}
+              </td>
+              <td>
+                {editingId === cat.id ? (
+                  <>
+                    <button onClick={() => handleSave(cat.id)}>Simpan</button>
+                    <button onClick={handleCancel}>Batal</button>
+                  </>
+                ) : (
+                  <>
+                    <button onClick={() => handleEdit(cat.id, cat.name)}>Edit</button>
+                    <button onClick={() => handleDelete(cat.id)}>Hapus</button>
+                  </>
+                )}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
 }
 
 export default Kategori;

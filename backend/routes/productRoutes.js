@@ -4,6 +4,10 @@ const productController = require("../controllers/productController");
 const { verifyAuthToken } = require("../middleware/authMiddleware");
 const { checkRole } = require("../middleware/roleMiddleware");
 
+
+
+app.use("/api/products", productRoutes);
+
 // --- Rute untuk Kategori ---
 router.post(
   "/categories",
@@ -64,6 +68,14 @@ router.delete(
   verifyAuthToken,
   checkRole(["admin"]),
   productController.deleteProduct
+);
+
+// --- Rute untuk Ringkasan Kategori ---
+router.get(
+  "/category-summary",
+  verifyAuthToken,
+  checkRole(["admin", "staf_gudang"]),
+  productController.getCategorySummary
 );
 
 module.exports = router;

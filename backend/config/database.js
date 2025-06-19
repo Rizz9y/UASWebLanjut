@@ -7,7 +7,7 @@ const sequelize = new Sequelize(
   env.MYSQL_DB_PASSWORD,
   {
     host: env.MYSQL_DB_HOST,
-    port: 3306,
+    port: 4306,
     dialect: env.MYSQL_DB_DIALECT,
     logging: false,
     pool: { max: 5, min: 0, acquire: 30000, idle: 10000 },
