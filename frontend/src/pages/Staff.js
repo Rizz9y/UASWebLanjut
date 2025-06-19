@@ -85,6 +85,13 @@ function Staff() {
         <div className="edit-modal">
           <div className="edit-box">
             <h2>{editingStaff.name}</h2>
+            <label>EDIT NAMA KARYAWAN</label>
+            <input
+              type="text"
+              name="name"
+              value={editingStaff.name}
+              onChange={handleInputChange}
+            />
             <label>EDIT USERNAME</label>
             <input
               type="text"
@@ -94,7 +101,7 @@ function Staff() {
             />
             <label>EDIT PASSWORD</label>
             <input
-              type="password"
+              type="text" // Diubah dari type="password" menjadi type="text"
               name="password"
               value={editingStaff.password}
               onChange={handleInputChange}
@@ -110,5 +117,4 @@ function Staff() {
   );
 }
 
-export default Staff;
-
+ export default Staff;
