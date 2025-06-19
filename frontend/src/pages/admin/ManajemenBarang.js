@@ -11,8 +11,7 @@ function ManajemenBarang() {
     base_price_buy: '',
     base_price_sell: '',
     unit: '',
-    stock: 0,
-    categoryid: '',
+    categoryid: '', // ← UBAH DARI categoryId KE categoryid
   });
   const [editingId, setEditingId] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -39,7 +38,6 @@ function ManajemenBarang() {
       setCategories(res.data);
     } catch (err) {
       console.error('Gagal ambil kategori:', err);
-      alert('Gagal mengambil data kategori!');
     }
   };
 

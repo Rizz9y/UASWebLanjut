@@ -1,6 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const categoryController = require('../controllers/categoryController');
+const { verifyAuthToken } = require('../middleware/authMiddleware'); // pastikan path sesuai
+
+// Gunakan middleware untuk semua route kategori
+router.use(verifyAuthToken);
 
 // Ambil semua kategori
 router.get('/', categoryController.getAllCategories);
