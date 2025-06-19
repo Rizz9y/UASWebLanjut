@@ -1,4 +1,5 @@
 const { Sequelize } = require("sequelize");
+const mongoose = require("mongoose");
 const env = require("./env");
 
 const sequelize = new Sequelize(
@@ -23,4 +24,19 @@ async function connectMySQL() {
   }
 }
 
-module.exports = { sequelize, connectMySQL };
+// Koneksi MongoDB
+async function connectMongoDB() {
+  const mongoUri = process.env.MONGODB_URI || "mongodb://localhost:27017/stock_management_logs";
+  try {
+    await mongoose.connect(mongoUri, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
+    console.log("Koneksi MongoDB berhasil.");
+  } catch (error) {
+    console.error("Gagal koneksi ke MongoDB:", error);
+    process.exit(1);
+  }
+}
+
+module.exports = { sequelize, connectMySQL, connectMongoDB };
