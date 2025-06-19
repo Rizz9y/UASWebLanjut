@@ -16,12 +16,15 @@ const stockRoutes = require("./routes/stockRoutes");
 const categoryRoutes = require("./routes/categories");
 const staffRoutes = require('./routes/staffRoutes');
 
+
+
 // Root Route
 app.get("/", (req, res) => {
   res.status(200).json({ message: "Stock Management API is running!" });
 });
 
 // Gunakan Routes
+app.use('/api/categories', categoryRoutes);
 app.use("/api/staff", staffRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);

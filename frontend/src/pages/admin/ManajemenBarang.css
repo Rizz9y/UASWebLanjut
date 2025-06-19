@@ -1,0 +1,103 @@
+/* Container keseluruhan */
+.barang-container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 32px;
+  background-color: #f5f1e6;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Judul Halaman */
+.barang-container h2 {
+  margin-bottom: 24px;
+  color: #333;
+  font-size: 24px;
+  border-left: 6px solid #915e3c;
+  padding-left: 12px;
+}
+
+/* Form Tambah/Edit */
+.barang-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.barang-form input {
+  flex: 1;
+  min-width: 200px;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+/* Tombol Tambah/Update */
+.barang-form button {
+  padding: 10px 20px;
+  background-color: #915e3c;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.barang-form button:hover {
+  background-color: #774b2f;
+}
+
+/* Tabel Barang */
+.barang-table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: white;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.barang-table th,
+.barang-table td {
+  padding: 12px 16px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+.barang-table th {
+  background-color: #915e3c;
+  color: white;
+  text-transform: uppercase;
+  font-size: 13px;
+  letter-spacing: 0.5px;
+}
+
+.barang-table tr:hover {
+  background-color: #f0e7da;
+}
+
+/* Tombol Edit & Hapus */
+.barang-table button {
+  padding: 6px 12px;
+  margin-right: 6px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.barang-table button:nth-child(1) {
+  background-color: #915e3c;
+  color: white;
+}
+
+.barang-table button:nth-child(2) {
+  background-color: #915e3c;
+  color: white;
+}
+
+.barang-table button:hover {
+  opacity: 0.9;
+}

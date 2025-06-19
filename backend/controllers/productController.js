@@ -1,5 +1,12 @@
 const { Product, Category, Variant } = require("../models");
 
+// Fungsi untuk generate SKU otomatis
+const generateSKU = async () => {
+  const count = await Product.count();
+  const padded = String(count + 1).padStart(4, '0');
+  return `SKU-${padded}`;
+};
+
 // --- Fungsi untuk Produk ---
 
 exports.createProduct = async (req, res) => {
@@ -10,35 +17,43 @@ exports.createProduct = async (req, res) => {
     base_price_buy,
     base_price_sell,
     unit,
-    categoryId,
+    categoryid, // ← UBAH DARI categoryId KE categoryid
     image_url,
     variants,
   } = req.body;
 
   try {
-    if (!name || !base_price_buy || !base_price_sell || !unit || !categoryId) {
+    // DEBUG: LOG DATA YANG DITERIMA
+    console.log('Data yang diterima:', req.body);
+
+    // VALIDASI FIELD REQUIRED
+    if (!name || !base_price_buy || !base_price_sell || !unit || !categoryid) {
       return res.status(400).json({
-        message:
-          "Nama, harga beli, harga jual, unit, dan kategori harus diisi.",
+        message: "Nama, harga beli, harga jual, unit, dan kategori harus diisi.",
       });
     }
 
-    const categoryExists = await Category.findByPk(categoryId);
+    // CEK APAKAH KATEGORI ADA
+    const categoryExists = await Category.findByPk(categoryid);
     if (!categoryExists) {
       return res.status(404).json({ message: "Kategori tidak ditemukan." });
     }
 
+    // GENERATE SKU JIKA TIDAK ADA
+    const finalSKU = sku_master || await generateSKU();
+
     const product = await Product.create({
       name,
-      sku_master,
+      sku_master: finalSKU,
       description,
       base_price_buy,
       base_price_sell,
       unit,
-      categoryId,
+      categoryid, // ← UBAH DARI categoryId KE categoryid
       image_url,
     });
 
+    // HANDLE VARIANTS JIKA ADA
     if (variants && variants.length > 0) {
       const variantInstances = variants.map((v) => ({
         ...v,
@@ -47,6 +62,7 @@ exports.createProduct = async (req, res) => {
       await Variant.bulkCreate(variantInstances);
     }
 
+    // AMBIL PRODUCT DENGAN RELASI
     const createdProduct = await Product.findByPk(product.id, {
       include: [
         { model: Category, as: "category", attributes: ["name"] },
@@ -54,9 +70,10 @@ exports.createProduct = async (req, res) => {
       ],
     });
 
-    res
-      .status(201)
-      .json({ message: "Produk berhasil dibuat.", product: createdProduct });
+    res.status(201).json({ 
+      message: "Produk berhasil dibuat.", 
+      product: createdProduct 
+    });
   } catch (error) {
     console.error("Error creating product:", error);
     res.status(500).json({
@@ -116,7 +133,7 @@ exports.updateProduct = async (req, res) => {
     base_price_buy,
     base_price_sell,
     unit,
-    categoryId,
+    categoryid, // ← UBAH DARI categoryId KE categoryid
     image_url,
     variants,
   } = req.body;
@@ -127,8 +144,9 @@ exports.updateProduct = async (req, res) => {
       return res.status(404).json({ message: "Produk tidak ditemukan." });
     }
 
-    if (categoryId) {
-      const categoryExists = await Category.findByPk(categoryId);
+    // CEK KATEGORI JIKA ADA PERUBAHAN
+    if (categoryid) {
+      const categoryExists = await Category.findByPk(categoryid);
       if (!categoryExists) {
         return res.status(404).json({ message: "Kategori tidak ditemukan." });
       }
@@ -141,11 +159,11 @@ exports.updateProduct = async (req, res) => {
       base_price_buy: base_price_buy ?? product.base_price_buy,
       base_price_sell: base_price_sell ?? product.base_price_sell,
       unit: unit ?? product.unit,
-      categoryId: categoryId ?? product.categoryId,
+      categoryid: categoryid ?? product.categoryid, // ← UBAH DARI categoryId KE categoryid
       image_url: image_url ?? product.image_url,
     });
 
-    // Handling variants update
+    // HANDLING VARIANTS UPDATE
     if (variants) {
       const existingVariants = await Variant.findAll({
         where: { productId: id },
@@ -289,7 +307,7 @@ exports.deleteCategory = async (req, res) => {
       return res.status(404).json({ message: "Kategori tidak ditemukan." });
     }
     const productsInCategory = await Product.count({
-      where: { categoryId: id },
+      where: { categoryid: id }, // ← UBAH DARI categoryId KE categoryid
     });
     if (productsInCategory > 0) {
       return res.status(400).json({

@@ -8,32 +8,37 @@ const Variant = require("./Variant");
 const Supplier = require("./Supplier");
 const StockTransaction = require("./StockTransaction");
 
-
 // Define Associations (Relasi antar model MySQL)
 
-// Product - Category
-Category.hasMany(Product, { foreignKey: "categoryId", as: "products" });
-Product.belongsTo(Category, { foreignKey: "categoryId", as: "productCategory" });
+// Product - Category (PERBAIKAN DI SINI)
+Category.hasMany(Product, { 
+  foreignKey: "categoryid",  // ← UBAH dari categoryId ke categoryid
+  as: "products" 
+});
+Product.belongsTo(Category, { 
+  foreignKey: "categoryid",  // ← UBAH dari categoryId ke categoryid
+  as: "category"             // ← UBAH dari productCategory ke category
+});
 
-// Product - Variant
+// Product - Variant (sudah benar)
 Product.hasMany(Variant, { foreignKey: "productId", as: "variants" });
 Variant.belongsTo(Product, { foreignKey: "productId", as: "product" });
 
-// StockTransaction - Variant
+// StockTransaction - Variant (sudah benar)
 Variant.hasMany(StockTransaction, {
   foreignKey: "variantId",
   as: "stockTransactions",
 });
 StockTransaction.belongsTo(Variant, { foreignKey: "variantId", as: "variant" });
 
-// StockTransaction - User
+// StockTransaction - User (sudah benar)
 User.hasMany(StockTransaction, {
   foreignKey: "userId",
   as: "stockTransactions",
 });
 StockTransaction.belongsTo(User, { foreignKey: "userId", as: "transactionBy" });
 
-// StockTransaction - Supplier
+// StockTransaction - Supplier (sudah benar)
 Supplier.hasMany(StockTransaction, {
   foreignKey: "supplierId",
   as: "stockTransactions",

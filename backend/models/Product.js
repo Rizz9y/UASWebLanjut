@@ -14,9 +14,13 @@ const Product = sequelize.define(
       type: DataTypes.STRING,
       allowNull: false,
     },
-    category: {
-      type: DataTypes.STRING,
+    categoryid: {
+      type: DataTypes.INTEGER, // ← UBAH DARI STRING KE INTEGER
       allowNull: false,
+      references: {
+        model: 'Categories', // ← TAMBAH FOREIGN KEY REFERENCE
+        key: 'id'
+      }
     },
     sku_master: {
       type: DataTypes.STRING,
@@ -48,6 +52,7 @@ const Product = sequelize.define(
     timestamps: true,
   }
 );
+
 
 
 module.exports = Product;
